@@ -5,10 +5,10 @@ import java.awt.event.ActionListener;
 
 public class GUI extends JFrame{
     int Port=3306;
-    String DBNAME="usapres";
+    String DBNAME="";
     String User="root";
-    String Pass="789456123";
-    String table="presidents";
+    String Pass="";
+    String table="";
 
     Database DB=new Database(Port,DBNAME,User,Pass);
     public static void main(String[] args){
