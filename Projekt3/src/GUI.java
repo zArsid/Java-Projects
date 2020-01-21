@@ -4,11 +4,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class GUI extends JFrame{
+    int Port=3306;
+    String DBNAME="usapres";
+    String User="root";
+    String Pass="789456123";
+    String table="presidents";
+
+    Database DB=new Database(Port,DBNAME,User,Pass);
     public static void main(String[] args){
         GUI JG=new GUI();
     }
 
-    Database DB=new Database("usapres","root","789456123");
+
     GUI(){
         //Frame
         JFrame frame = new JFrame("DATABASE READ WRITER");
@@ -18,83 +25,113 @@ public class GUI extends JFrame{
         //Krijome panelin qe do mbaje komponentet
         JPanel panel = new JPanel();
 
-        //Krijme elementet poshte
-        JTextArea searchBox=new JTextArea();
-        panel.add(searchBox);
 
 
-
-
-        //Krijojme komponentet
-        JLabel kriteri = new JLabel("Kriteri:");
+        //*================================Paneli_Poshte================================*//
+        JLabel klabel = new JLabel("Kriteri:");
+        panel.add(klabel);           //Shtojme ne panel
 
         //ComboBox qe merr te dhenat rreth tabeles
-        JComboBox Kritercombo=new JComboBox(DB.getFields("presidents",1));
+        JComboBox Kritercombo=new JComboBox(DB.getFields(table,1)); //Popullojme combobox me te dhena nga database
+        panel.add(Kritercombo);     //Shtojme ne panel
 
         //TextField ku do vendosim termat e kerkimit
-        JTextField tf1 = new JTextField(20);
+        JTextField Termat = new JTextField(20);
         Dimension dim =new Dimension(15,25) ;
-        tf1.setPreferredSize(dim);
+        Termat.setPreferredSize(dim);   //I japim dimensione per paraqitje
+        panel.add(Termat);       //Shtojme ne panel
 
         //Butoni i kerkimit qe ekzekuton query per kerkimin me termat ne database
-        JButton send = new JButton("Kerko");
+        JButton searchB = new JButton("Kerko");
+        panel.add(searchB);         //Shtojme ne panel
+
+        //Butoni i fshirjes qe ekzekuton query per fshirjen me termat ne database
+        JButton deleteB = new JButton("Fshi");
+        panel.add(deleteB);      //Shtojme ne panel
+        deleteB.setVisible(false);
+        //Vendosim nje border panelit
+        frame.getContentPane().add(BorderLayout.SOUTH, panel);
+        //*==========================================================================*//
 
 
-        //Vendosim komponetet ne Panel
-        panel.add(kriteri);
-        panel.add(Kritercombo);
-        panel.add(tf1);
-        panel.add(send);
-
-        // Text Area at the Center
-        JTextArea ta = new JTextArea();
+        //Text Area ne qender
+        JTextArea TQender = new JTextArea();
+        frame.getContentPane().add(BorderLayout.CENTER, TQender); //E pozicionojme ne qender
 
 
+        //*============================Menuja===============================*//
+        //Pjesa e siperme (Menuja)
+        JMenuBar menuBar=new JMenuBar(); //Krijojme nje menu
+        frame.setJMenuBar(menuBar); //Vendosim menune ne frame
 
-        //Krijojme nje menu
-        JMenuBar menuBar=new JMenuBar();
-        //Vendosim menune ne frame
-        frame.setJMenuBar(menuBar);
-
-        //Krijojme disa butona dhe i vendosim eventet
+        //Krijojme disa butona
         JButton m1=new JButton("Afisho");
         m1.setToolTipText("Afisho Rekordet");
-        m1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-               String res= DB.getAllData("presidents");
-               ta.setText(res);
-            }
-        });
-        JButton m3=new JButton("Shto");
-        m3.setToolTipText("Shto Rekord ne DB");
-        m3.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                //popup form
-            }
-        });
-        JButton m4=new JButton("Fshi");
-        m4.setToolTipText("Fshij Rekord nga DB");
-        m4.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                //popup form
-            }
-        });
-        //Shtojme elementet ne menu
+
+        JButton m2=new JButton("Shto");
+        m2.setToolTipText("Shto Rekord ne DB");
+
+        JButton m3=new JButton("Fshi");
+        m3.setToolTipText("Fshij Rekord nga DB");
+
+        //Shtojme butonat ne menu
         menuBar.add(m1);
+        menuBar.add(m2);
         menuBar.add(m3);
-        menuBar.add(m4);
+        //*=================================================================*//
 
 
 
 
+        //Eventet
+        m1.addActionListener(new ActionListener() {
+            //Pret per nje veprim mbi butonin
+            public void actionPerformed(ActionEvent e) {
+                //Kur veprimi kryhet ekzekutohet nje query qe merr te dhenat ne db
+                String res= DB.getAllData(table);
+                TQender.setText(res);
+            }
+        });
+        m2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                DB.Add(table);
+            }
+        });
+        m3.addActionListener(new ActionListener() {  //Ndryshon gjendjen e butonit Kerko /Fshi
+            public void actionPerformed(ActionEvent e){
+                //Vendos butonin per fshirjen e rekordeve dhe fshe butonin e kerkimit
+                if(m3.getText()=="Fshi"){
+                    deleteB.setVisible(true);
+                    searchB.setVisible(false);
+                    m3.setText("Kerko");
+                }
+                //Vendos butonin per kerkimin e rekordeve dhe fshe butonin e fshirjes
+                else {
+                    deleteB.setVisible(false);
+                    searchB.setVisible(true);
+                    m3.setText("Fshi");
+                }
+            }
+        });
+
+        searchB.addActionListener(new ActionListener() {
+            //Pret per nje veprim mbi butonin
+            public void actionPerformed(ActionEvent e) {
+                //Ekzekuton query per kerkimit e rekordit me termat
+                String res=DB.Search(table,Kritercombo.getSelectedItem().toString(),Termat.getText().toString());
+                TQender.setText(res);
+            }
+        });
+        deleteB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //Ekzekuton query per fshirjen e rekordit
+                DB.Delete(table,Kritercombo.getSelectedItem().toString(),Termat.getText());
+                String res= DB.getAllData(table);
+                TQender.setText("Tabela e re:\n"+res);
+            }
+        });
 
 
-        //Adding Components to the frame.
-        frame.getContentPane().add(BorderLayout.SOUTH, panel);
-
-        frame.getContentPane().add(BorderLayout.CENTER, ta);
         frame.setVisible(true);
-
-
     }
 }
